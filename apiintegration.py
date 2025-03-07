@@ -12,41 +12,56 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import datetime
 
-# OpenWeatherMap API Key (Replace 'your_api_key' with an actual API key)
+# OpenWeatherMap API Key (Replace with a valid key)
 API_KEY = "2a22f6e6f3280a1d7e137ec6e7cb6ba1"
-CITY = "New York"
+
+# User input for city name
+CITY = input("Enter the city name: ")
+
+# OpenWeather API URL for 5-day forecast
 URL = f"http://api.openweathermap.org/data/2.5/forecast?q={CITY}&appid={API_KEY}&units=metric"
 
 # Fetch data from API
 response = requests.get(URL)
-data = response.json()
-# Check if the API request was successful
-    # Extract relevant data
-timestamps = []
-temperatures = []
-humidities = []
 
-for entry in data['list']:
-    timestamps.append(datetime.datetime.fromtimestamp(entry['dt']))
-    temperatures.append(entry['main']['temp'])
-    humidities.append(entry['main']['humidity'])
+# Check if API request was successful
+if response.status_code == 200:
+    data = response.json()
+    
+    # Extract relevant data
+    timestamps = []
+    temperatures = []
+    humidities = []
+
+    for entry in data['list']:
+        timestamps.append(datetime.datetime.fromtimestamp(entry['dt']))
+        temperatures.append(entry['main']['temp'])
+        humidities.append(entry['main']['humidity'])
 
     # Plot temperature and humidity trends
-sns.set_style("whitegrid")
-fig, ax1 = plt.subplots(figsize=(12, 6))
-ax2 = ax1.twinx()
-ax1.plot(timestamps, temperatures, color='tab:red', marker='o', label='Temperature (°C)')
-ax2.plot(timestamps, humidities, color='tab:blue', marker='s', linestyle='dashed', label='Humidity (%)')
+    sns.set_style("whitegrid")
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    ax2 = ax1.twinx()
+    ax1.plot(timestamps, temperatures, color='tab:red', marker='o', label='Temperature (°C)', linewidth=2)
+    ax2.plot(timestamps, humidities, color='tab:blue', marker='s', linestyle='dashed', label='Humidity (%)', linewidth=2)
 
     # Labels and title
-ax1.set_xlabel("Date & Time")
-ax1.set_ylabel("Temperature (°C)", color='tab:red')
-ax2.set_ylabel("Humidity (%)", color='tab:blue')
-plt.title(f"Weather Forecast for {CITY}")
+    ax1.set_xlabel("Date & Time")
+    ax1.set_ylabel("Temperature (°C)", color='tab:red', fontsize=12)
+    ax2.set_ylabel("Humidity (%)", color='tab:blue', fontsize=12)
+    plt.title(f"Weather Forecast for {CITY}", fontsize=14, fontweight="bold")
 
-    # Rotate x-axis labels
-plt.xticks(rotation=45)
-fig.tight_layout()
-plt.show()
+    # Improve readability of x-axis
+    plt.xticks(rotation=45, fontsize=10)
+    fig.tight_layout()
 
-print(data)
+    # Show legend
+    ax1.legend(loc="upper left")
+    ax2.legend(loc="upper right")
+
+    # Display the plot
+    plt.show()
+
+else:
+    print(f"Error fetching weather data: {response.status_code}. Check city name or API key.")
